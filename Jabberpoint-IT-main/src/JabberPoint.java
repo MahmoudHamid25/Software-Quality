@@ -23,10 +23,29 @@ public class JabberPoint {
 
 	/** Het Main Programma */
 	public static void main(String argv[]) {
-		
+
 		Style.createStyles();
-		Presentation presentation = new Presentation();
+		Presentation presentation = new Presentation("demo");
+
+//		Slide slide1 = new Slide();
+//		slide1.setTitle("First slide for testing");
+//		Slide slide2 = new Slide();
+//		slide2.setTitle("Second slide test");
+//
+//		slide1.append(new TextItem(1, "Welcome to the test presentation"));
+//		slide1.append(new TextItem(2, "idk what to write"));
+//
+//		slide2.append(new TextItem(1, "Second slide"));
+//		slide2.append(new TextItem(3,"This is level 3 of a textItem"));
+//
+//
+//		presentation.append(slide1);
+//		presentation.append(slide2);
+
+//      Testing making a new slide just for learning purposes.
+
 		new SlideViewerFrame(JABVERSION, presentation);
+
 		try {
 			if (argv.length == 0) { // een demo presentatie
 				Accessor.getDemoAccessor().loadFile(presentation, "");
