@@ -1,132 +1,106 @@
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-
-/**
- * <p>Presentation maintains the slides in the presentation.</p>
- * <p>There is only instance of this class.</p>
- * @author Ian F. Darwin, ian@darwinsys.com, Gert Florijn, Sylvia Stuurman
- * @version 1.1 2002/12/17 Gert Florijn
- * @version 1.2 2003/11/19 Sylvia Stuurman
- * @version 1.3 2004/08/17 Sylvia Stuurman
- * @version 1.4 2007/07/16 Sylvia Stuurman
- * @version 1.5 2010/03/03 Sylvia Stuurman
- * @version 1.6 2014/05/16 Sylvia Stuurman
- */
-
 public class Presentation {
-	private String title; // title of the presentation
-	private List<Slide> slides = null; // an ArrayList with Slides
-	private int currentSlideNumber; // the slidenummer of the current Slide
-	private List<Observable> observables; // list of observables
+	private String title;               // title of the presentation
+	private List<Slide> slides;         // list of slides
+	private int currentSlideNumber;     // the current slide number
+	private List<Observer> observers;   // list of observers
+	private SlideViewerComponent showView; // the view component
 
-	public Presentation(String title)
-	{
+	public Presentation(String title) {
 		this.title = title;
-		this.observables = new ArrayList<>();
 		this.slides = new ArrayList<>();
 		this.currentSlideNumber = 0;
+		this.observers = new ArrayList<>();
 	}
 
-	public int getSize()
-	{
-		return this.slides.size();
+	public void setShowView(SlideViewerComponent view) {
+		this.showView = view;
 	}
 
-	public String getTitle()
-	{
-		return this.title;
+	public SlideViewerComponent getShowView() {
+		return showView;
 	}
 
-	public void setTitle(String title)
-	{
+	// Observer management
+	public void addObserver(Observer observer) {
+		if (!observers.contains(observer)) {
+			observers.add(observer);
+		}
+	}
+
+	public void removeObserver(Observer observer) {
+		observers.remove(observer);
+	}
+
+	public void notifyObservers() {
+		for (Observer o : observers) {
+			o.update();
+		}
+	}
+
+	// Presentation methods
+	public int getSize() {
+		return slides.size();
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
 		this.title = title;
 	}
 
-	// give the number of the current slide
-	public int getSlideNumber()
-	{
+	public int getSlideNumber() {
 		return currentSlideNumber;
 	}
 
-	// change the current slide number and notify the observables
-	public void setSlideNumber(int number)
-	{
-		if (number >= 0 && number < getSize())
-		{
-			this.currentSlideNumber = number;
-			notifyObservables();
+	public void setSlideNumber(int number) {
+		if (number >= 0 && number < getSize()) {
+			currentSlideNumber = number;
+			notifyObservers();
 		}
 	}
 
-	// go to the previous slide unless your at the beginning of the presentation
-	public void prevSlide()
-	{
-		if (currentSlideNumber > 0)
-		{
-			setSlideNumber(currentSlideNumber - 1);
-	    }
-	}
-
-	// go to the next slide unless your at the end of the presentation.
-	public void nextSlide()
-	{
-		if (currentSlideNumber < slides.size() - 1)
-		{
-			setSlideNumber(currentSlideNumber + 1);
+	public void prevSlide() {
+		if (currentSlideNumber > 0) {
+			currentSlideNumber--;
+			notifyObservers();
 		}
 	}
 
-	// Delete the presentation to be ready for the next one.
-	void clear()
-	{
-		this.slides = Collections.emptyList();
-		setSlideNumber(-1);
+	public void nextSlide() {
+		if (currentSlideNumber < slides.size() - 1) {
+			currentSlideNumber++;
+			notifyObservers();
+		}
 	}
 
-	// Add a slide to the presentation
-	public void addSlide(Slide slide)
-	{
+	public void clear() {
+		slides = new ArrayList<>();
+		currentSlideNumber = 0;
+		notifyObservers();
+	}
+
+	public void addSlide(Slide slide) {
 		slides.add(slide);
 	}
 
-	// Get a slide with a certain slide number
-	public Slide getSlide(int number)
-	{
-		if (number < 0 || number >= getSize())
-		{
-			throw new IndexOutOfBoundsException("invalid slide number" + number);
-	    }
-			return (Slide) slides.get(number);
-	}
-
-	// Give the current slide
-	public Slide getCurrentSlide()
-	{
-		return getSlide(currentSlideNumber);
-	}
-
-	public void exit(int statusNumber)
-	{
-		System.exit(statusNumber);
-	}
-
-	public void removeObservables(Observable observable)
-	{
-		this.observables.remove(observable);
-	}
-
-	public void addObservables(Observable observable)
-	{
-		this.observables.add(observable);
-	}
-
-	public void notifyObservables()
-	{
-		for (Observable observable : observables)
-		{
-			observable.update(this, getCurrentSlide());
+	public Slide getSlide(int number) {
+		if (number < 0 || number >= getSize()) {
+			throw new IndexOutOfBoundsException("Invalid slide number " + number);
 		}
+		return slides.get(number);
+	}
+
+	public Slide getCurrentSlide() {
+		return (getSlideNumber() >= 0 && getSlideNumber() < getSize()) ?
+				getSlide(currentSlideNumber) : null;
+	}
+
+	public void exit(int statusNumber) {
+		System.exit(statusNumber);
 	}
 }

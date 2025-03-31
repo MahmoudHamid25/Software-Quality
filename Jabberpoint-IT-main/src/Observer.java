@@ -1,4 +1,3 @@
-package PACKAGE_NAME;
-
-public class observer {
+public interface Observer {
+    void update();
 }

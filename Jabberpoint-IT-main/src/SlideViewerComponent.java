@@ -4,70 +4,67 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 
+public class SlideViewerComponent extends JComponent implements Observer {
 
-/** <p>SlideViewerComponent is a graphical component that can show slides.</p>
- * @author Ian F. Darwin, ian@darwinsys.com, Gert Florijn, Sylvia Stuurman
- * @version 1.1 2002/12/17 Gert Florijn
- * @version 1.2 2003/11/19 Sylvia Stuurman
- * @version 1.3 2004/08/17 Sylvia Stuurman
- * @version 1.4 2007/07/16 Sylvia Stuurman
- * @version 1.5 2010/03/03 Sylvia Stuurman
- * @version 1.6 2014/05/16 Sylvia Stuurman
- */
+    private Presentation presentation;
+    private Font labelFont;
+    private Color backgroundColor = Color.WHITE;
+    private Color textColor = Color.BLACK;
+    private int xPos = 50;
+    private int yPos = 50;
 
-public class SlideViewerComponent extends JComponent implements Observable {
-		
-	private Slide slide; // current slide
-	private Font labelFont = null; // font for labels
-	private Presentation presentation = null; // the presentation
-	private JFrame frame = null;
-	
-	private static final long serialVersionUID = 227L;
-	
-	private static final Color BGCOLOR = Color.white;
-	private static final Color COLOR = Color.black;
-	private static final String FONTNAME = "Dialog";
-	private static final int FONTSTYLE = Font.BOLD;
-	private static final int FONTHEIGHT = 10;
-	private static final int XPOS = 1100;
-	private static final int YPOS = 20;
+    public SlideViewerComponent(Presentation pres) {
+        this.presentation = pres;
+        this.labelFont = new Font("Dialog", Font.BOLD, 10);
+        setBackground(backgroundColor);
+        presentation.addObserver(this);
+    }
 
-	public SlideViewerComponent(Presentation pres, JFrame frame) {
-		setBackground(BGCOLOR); 
-		presentation = pres;
-		labelFont = new Font(FONTNAME, FONTSTYLE, FONTHEIGHT);
-		this.frame = frame;
-	}
+    // This update() method will be called by Presentation.notifyObservers()
+    @Override
+    public void update() {
+        repaint();
+        System.out.println("Updated to slide: " + (presentation.getSlideNumber() + 1));
+    }
 
-	public Dimension getPreferredSize() {
-		return new Dimension(Slide.WIDTH, Slide.HEIGHT);
-	}
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(Slide.WIDTH, Slide.HEIGHT);
+    }
 
-	public void update(Presentation presentation, Slide data) {
-		if (data == null) {
-			repaint();
-			return;
-		}
-		this.presentation = presentation;
-		this.slide = data;
-		repaint();
-		frame.setTitle(presentation.getTitle());
-	}
+    @Override
+    public void paintComponent(Graphics graphics) {
+        graphics.setColor(backgroundColor);
+        graphics.fillRect(0, 0, getSize().width, getSize().height);
+        Slide currentSlide = presentation.getCurrentSlide();
+        if (presentation.getSlideNumber() < 0 || currentSlide == null) {
+            return;
+        }
+        graphics.setFont(labelFont);
+        graphics.setColor(textColor);
+        graphics.drawString("Slide " + (1 + presentation.getSlideNumber()) + " of " +
+                presentation.getSize(), xPos, yPos);
+        Rectangle area = new Rectangle(0, yPos, getWidth(), (getHeight() - yPos));
+        currentSlide.draw(graphics, area, this);
+    }
 
-// draw the slide
-	public void paintComponent(Graphics graphics) {
-		graphics.setColor(BGCOLOR);
-		graphics.fillRect(0, 0, getSize().width, getSize().height);
-		if (presentation.getSlideNumber() < 0 || slide == null) {
-			return;
-		}
-		graphics.setFont(labelFont);
-		graphics.setColor(COLOR);
-		graphics.drawString("Slide " + (1 + presentation.getSlideNumber()) + " of " +
-                 presentation.getSize(), XPOS, YPOS);
-		Rectangle area = new Rectangle(0, YPOS, getWidth(), (getHeight() - YPOS));
-		slide.draw(graphics, area, this);
-	}
+    // Setters for customization
+    public void setBackgroundColor(Color backgroundColor) {
+        this.backgroundColor = backgroundColor;
+        setBackground(backgroundColor);
+    }
+
+    public void setTextColor(Color textColor) {
+        this.textColor = textColor;
+    }
+
+    public void setLabelFont(Font labelFont) {
+        this.labelFont = labelFont;
+    }
+
+    public void setTextPosition(int xPos, int yPos) {
+        this.xPos = xPos;
+        this.yPos = yPos;
+    }
 }
